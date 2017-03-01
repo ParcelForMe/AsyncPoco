@@ -1,7 +1,7 @@
 ﻿// AsyncPoco is a fork of PetaPoco and is bound by the same licensing terms.
 // PetaPoco - A Tiny ORMish thing for your POCO's.
 // Copyright © 2011-2012 Topten Software.  All Rights Reserved.
- 
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,6 +9,8 @@ using System.Data;
 using System.Reflection.Emit;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.SqlServer.Types;
+using System.Data.SqlTypes;
 
 namespace AsyncPoco.Internal
 {
@@ -360,7 +362,14 @@ namespace AsyncPoco.Internal
 				}
 				else
 				{
-					return src => Convert.ChangeType(src, dstType, null);
+                    return src =>
+                    {
+                        if (dstType == typeof(SqlGeography))
+                        {
+                            return  src == null ? default(SqlGeography) : SqlGeography.Parse(new SqlString(src.ToString()));
+                        }
+                        return Convert.ChangeType(src, dstType, null);
+                    };
 				}
 			}
 
